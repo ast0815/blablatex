@@ -101,16 +101,22 @@ def remove_blablatex_blocks(text):
     return ret
 
 def yield_blocks(fileobject):
-    """Yield text blocks separated by empty lines."""
+    """Yield text blocks separated by empty lines.
+
+    Blocks are separated by blank lines, lines starting with '\par'
+    or if the line starts a new environment.
+    """
 
     block = ""
 
     for line in fileobject:
-        if not re.match(r'\s*$', line):
-            block += line
-        if re.match(r'\s*$', line) or re.match(r'\s*\\par', line):
-            yield block
+        if re.match(r'\s*$', line) or re.match(r'\s*\\par', line) or re.match(r'\s*\\begin', line):
+            # Start a new block
+            if block != "":
+                yield block
             block = ""
+
+        block += line
 
     if block != "":
         # Yield last block if there is no trailing empty line
@@ -137,7 +143,7 @@ def annotate_file(filename, lang='en', remove=False):
                     else:
                         block = add_requirements(block)
 
-                outf.write(block + "\n")
+                outf.write(block)
 
 if __name__ == '__main__':
     args = docopt(__doc__)
