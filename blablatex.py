@@ -101,7 +101,7 @@ def remove_blablatex_blocks(text):
     return ret
 
 def yield_blocks(fileobject):
-    """Yield text blocks separated by empty lines.
+    """Yield text blocks from the file object.
 
     Blocks are separated by blank lines, lines starting with '\par'
     or if the line starts a new environment.
@@ -110,13 +110,19 @@ def yield_blocks(fileobject):
     block = ""
 
     for line in fileobject:
-        if re.match(r'\s*$', line) or re.match(r'\s*\\par', line) or re.match(r'\s*\\begin', line):
-            # Start a new block
+        if re.match(r'\s*$', line) or re.match(r'\s*\\par', line):
+            # Start a new block with a blank line
             if block != "":
                 yield block
-            block = ""
-
-        block += line
+            block = "\n"
+        elif re.match(r'\s*\\begin', line):
+            # Start a new block with the line
+            if block != "":
+                yield block
+            block = line
+        else:
+            # Add the line to the block
+            block += line
 
     if block != "":
         # Yield last block if there is no trailing empty line
