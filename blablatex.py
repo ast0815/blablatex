@@ -80,7 +80,7 @@ def annotate_paragraph(par, lang='en'):
         color = 'black'
 
     startblock = "%%blablatex\n\\begin{blabla}{%.2f}{%s}\n%%/blablatexi\n"%(BS, color)
-    endblock = "\n%blablatex\n\\end{blabla}\n%/blablatex\n"
+    endblock = "%blablatex\n\\end{blabla}\n%/blablatex\n"
 
     return startblock + par + endblock
 
@@ -106,9 +106,9 @@ def yield_blocks(fileobject):
     block = ""
 
     for line in fileobject:
-        if line != "\n":
+        if not re.match(r'\s*$', line):
             block += line
-        else:
+        if re.match(r'\s*$', line) or re.match(r'\s*\\par', line):
             yield block
             block = ""
 
