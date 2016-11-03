@@ -79,7 +79,7 @@ def annotate_paragraph(par, lang='en'):
     else:
         color = 'black'
 
-    startblock = "%%blablatex\n\\begin{blabla}{%.2f}{%s}\n%%/blablatexi\n"%(BS, color)
+    startblock = "%%blablatex\n\\begin{blabla}{%.2f}{%s}\n%%/blablatex\n"%(BS, color)
     endblock = "%blablatex\n\\end{blabla}\n%/blablatex\n"
 
     return startblock + par + endblock
