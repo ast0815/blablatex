@@ -84,21 +84,18 @@ def annotate_paragraph(par, lang='en'):
 
     return startblock + par + endblock
 
-def remove_blablatex_blocks(text):
+def lines_without_blablatex_blocks(fileobject):
     """Remove blablatex blocks from text."""
 
     in_block = False
 
-    ret = ""
-    for line in text.split('\n'):
+    for line in fileobject:
         if re.match(r'%blablatex', line):
             in_block = True
         if not in_block:
-            ret += line + '\n'
-        if re.match(r'%\blablatex', line):
+            yield line
+        if re.match(r'%/blablatex', line):
             in_block = False
-
-    return ret
 
 def yield_blocks(fileobject):
     """Yield text blocks from the file object.
@@ -138,10 +135,11 @@ def annotate_file(filename, lang='en', remove=False):
 
     with open(filename+'.org', 'r') as inf:
         with open(filename, 'w') as outf:
-            for block in yield_blocks(inf):
-                if remove:
-                    block = remove_blablatex_blocks(block)
-                else:
+            if remove:
+                for line in lines_without_blablatex_blocks(inf):
+                    outf.write(line)
+            else:
+                for block in yield_blocks(inf):
                     if not re.match(r'\s*[%\\]', block):
                         if len(block) > 80:
                             # Probably a regular paragraph
@@ -149,7 +147,7 @@ def annotate_file(filename, lang='en', remove=False):
                     else:
                         block = add_requirements(block)
 
-                outf.write(block)
+                    outf.write(block)
 
 if __name__ == '__main__':
     args = docopt(__doc__)
