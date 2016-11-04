@@ -26,7 +26,7 @@ The removal with `-r` does not work very reliably!
 from docopt import docopt
 from blablameter import check_bullshit
 import re
-import os
+import os, sys
 
 def add_requirements(text):
     """Add required definitions at the appropraite positions."""
@@ -125,13 +125,22 @@ def yield_blocks(fileobject):
         # Yield last block if there is no trailing empty line
         yield block
 
+class BackupError(Exception):
+    pass
+
 def annotate_file(filename, lang='en', remove=False):
     """Annotate the file `<filename>`.
 
     The orginal is saved as `<filename>.org`.
     """
 
+    if os.path.lexists(filename+'.org'):
+        raise BackupError("File already exists: %s"%(filename+'.org',))
+
     os.rename(filename, filename+'.org')
+
+    if os.path.lexists(filename):
+        raise BackupError("File already exists: %s"%(filename+'.org',))
 
     with open(filename+'.org', 'r') as inf:
         with open(filename, 'w') as outf:
@@ -157,4 +166,8 @@ if __name__ == '__main__':
     texfiles = args['<texfile>']
 
     for tf in texfiles:
-        annotate_file(tf, lang=lang, remove=remove)
+        try:
+            annotate_file(tf, lang=lang, remove=remove)
+        except BackupError:
+            sys.stderr.write("Could not backup file: %s\n"%(tf,))
+            sys.stderr.write("Skipping...\n")
