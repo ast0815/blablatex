@@ -98,21 +98,12 @@ def lines_without_blablatex_blocks(fileobject):
             in_block = False
 
 def yield_blocks(fileobject):
-    """Yield text blocks from the file object.
-
-    Blocks are separated by blank lines, lines starting with '\par'
-    or if the line starts a new environment.
-    """
+    """Yield text blocks from the file object."""
 
     block = ""
 
     for line in fileobject:
-        if re.match(r'\s*$', line) or re.match(r'\s*\\par', line):
-            # Start a new block with a blank line
-            if block != "":
-                yield block
-            block = "\n"
-        elif re.match(r'\s*\\begin', line):
+        if re.match(r'\s*$', line) or re.match(r'\s*\\par', line) or re.match(r'\s*\\begin', line):
             # Start a new block with the line
             if block != "":
                 yield block
@@ -149,7 +140,9 @@ def annotate_file(filename, lang='en', remove=False):
                     outf.write(line)
             else:
                 for block in yield_blocks(inf):
-                    if not re.match(r'\s*[%\\]', block):
+                    if (not re.match(r'\s*[%\\]', block)) or (re.match(r'\s*\\par', block) or re.match(r'\s*\\label', block)):
+                        # Only consider blocks not starting with '%' or '\',
+                        # or starting with '\par' or '\label'
                         if len(block) > 80:
                             # Probably a regular paragraph
                             block = annotate_paragraph(block, lang=lang)
