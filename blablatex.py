@@ -108,6 +108,11 @@ def yield_blocks(fileobject):
             if block != "":
                 yield block
             block = line
+        elif re.match(r'\s*\\(?:sub)*section', line) or re.match(r'\s*\\chapter', line):
+            # Start a new block after a \(sub)(sub)section or \chapter
+            block += line
+            yield block
+            block = ""
         else:
             # Add the line to the block
             block += line
